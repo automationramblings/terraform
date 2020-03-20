@@ -30,6 +30,7 @@ resource "aws_subnet" "web_subnets" {
   vpc_id     = aws_vpc.webapp-vpc.id
   cidr_block = cidrsubnet(aws_vpc.webapp-vpc.cidr_block,8,each.value)
   availability_zone = each.key
+  map_public_ip_on_launch=true
   tags = {
     # used the subsring on naming to extract the last 2 chars of az for name spec (ie: web-1a)
     Name = join ("-",["web",substr(each.key,8,9)])
@@ -46,6 +47,7 @@ resource "aws_subnet" "app_subnets" {
   vpc_id     = aws_vpc.webapp-vpc.id
   cidr_block = cidrsubnet(aws_vpc.webapp-vpc.cidr_block,8,(100+each.value))
   availability_zone = each.key
+  map_public_ip_on_launch=true
   tags = {
     Name = join ("-",["app",substr(each.key,8,9)])
     Application="webapp"
@@ -236,13 +238,17 @@ data "vra_region" "lab" {
   region           = var.region
 }
 
+
 # Configure a new Cloud Zone
 resource "vra_zone" "aws" {
   for_each = var.subnet_numbers
   name        = join(" ", ["AWS",each.key]) 
   description = join(" ", ["Cloud Zone configured by Terraform",each.key])
   region_id   = data.vra_region.lab.id
-
+  tags_to_match {
+    key = "zone"
+    value= each.key
+  }
   tags {
     key   = "zone"
     value = each.key
@@ -301,7 +307,7 @@ resource  "vra_network_profile" "web" {
 
   fabric_network_ids = [for i in data.vra_fabric_network.web: i.id]
   security_group_ids=[aws_security_group.web-sg.id]
-  isolation_type="NONE"
+  isolation_type="SECURITY_GROUP"
   tags {
     key="Tier"
     value="web"
@@ -316,7 +322,7 @@ resource  "vra_network_profile" "app" {
 
   fabric_network_ids = [for i in data.vra_fabric_network.app: i.id]
   security_group_ids=[aws_security_group.app-sg.id]
-  isolation_type="NONE"
+  isolation_type="SECURITY_GROUP"
   tags {
     key="Tier"
     value="app"
