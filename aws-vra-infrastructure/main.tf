@@ -223,6 +223,9 @@ resource "vra_cloud_account_aws" "lab" {
   tags {
     key   = "location"
     value = "aws"
+  } 
+  provisioner "local-exec" {
+    command = "sleep 10"
   }
   depends_on = [aws_route_table_association.web_routes,aws_route_table_association.app_routes]
 }
