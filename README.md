@@ -9,4 +9,5 @@ vRA cloud account, images, flavors configured.  Network profiles and cloud zones
 <h5>Known Issues:</h5> 
 <ul>
 	<li>Security groups not being set properly on the network profiles</li>
+    <li>How to add tags to the discovered compute resources so automatically mapped to the cloud zones?</li>
 </ul>
